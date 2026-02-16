@@ -54,11 +54,29 @@ class MatomoTracker {
       this.pushInstruction = (..._args: any[]): MatomoTracker => this; // No-op
       // Make other methods no-op as well
       const noOp = () => {};
+      this.enableHeartBeatTimer = noOp as any;
+      this.enableLinkTracking = noOp as any;
       this.trackEvent = noOp as any;
       this.trackPageView = noOp as any;
       this.trackSiteSearch = noOp as any;
       this.trackLink = noOp as any;
-      // ... and so on for all public methods
+      this.trackEvents = noOp as any;
+      this.stopObserving = noOp as any;
+      this.addEcommerceItem = noOp as any;
+      this.removeEcommerceItem = noOp as any;
+      this.clearEcommerceCart = noOp as any;
+      this.trackEcommerceOrder = noOp as any;
+      this.trackEcommerceCartUpdate = noOp as any;
+      this.setEcommerceView = noOp as any;
+      this.setEcommerceCategoryView = noOp as any;
+      this.requireConsent = noOp as any;
+      this.setConsentGiven = noOp as any;
+      this.requireCookieConsent = noOp as any;
+      this.setCookieConsentGiven = noOp as any;
+      this.forgetCookieConsentGiven = noOp as any;
+      this.optUserOut = noOp as any;
+      this.forgetUserOptOut = noOp as any;
+      this.deleteCookies = noOp as any;
       return;
     }
 
@@ -82,7 +100,7 @@ class MatomoTracker {
 
     this.pushInstruction(
       "setTrackerUrl",
-      trackerUrl ?? `${normalizedUrlBase}matomo.php`
+      trackerUrl ?? `${normalizedUrlBase}matomo.php`,
     );
     this.pushInstruction("setSiteId", siteId);
 
@@ -144,7 +162,7 @@ class MatomoTracker {
             });
           } else {
             throw new Error(
-              `Error: data-matomo-category and data-matomo-action are required.`
+              `Error: data-matomo-category and data-matomo-action are required.`,
             );
           }
         });
@@ -172,7 +190,7 @@ class MatomoTracker {
             }
 
             const elements = Array.from(
-              node.querySelectorAll<HTMLElement>(matchString)
+              node.querySelectorAll<HTMLElement>(matchString),
             );
             this.trackEventsForElements(elements);
           });
@@ -184,7 +202,7 @@ class MatomoTracker {
     // Now track all already existing elements
     if (firstTime) {
       const elements = Array.from(
-        document.querySelectorAll<HTMLElement>(matchString)
+        document.querySelectorAll<HTMLElement>(matchString),
       );
       this.trackEventsForElements(elements);
     }
@@ -249,8 +267,8 @@ class MatomoTracker {
         this.pushInstruction(
           "setCustomDimension",
           customDimension.id,
-          customDimension.value
-        )
+          customDimension.value,
+        ),
       );
     }
     this.pushInstruction(TRACK_TYPES.TRACK_LINK, href, linkType);
@@ -278,7 +296,7 @@ class MatomoTracker {
       productName,
       productCategory,
       productPrice,
-      productQuantity
+      productQuantity,
     );
   }
 
@@ -337,7 +355,7 @@ class MatomoTracker {
       sku,
       productName,
       productCategory,
-      productPrice
+      productPrice,
     );
   }
 
@@ -364,13 +382,13 @@ class MatomoTracker {
       ) {
         customDimensions.forEach(
           (
-            customDimension: CustomDimension // Corrected type
+            customDimension: CustomDimension, // Corrected type
           ) =>
             this.pushInstruction(
               "setCustomDimension",
               customDimension.id,
-              customDimension.value
-            )
+              customDimension.value,
+            ),
         );
       }
 
@@ -378,7 +396,7 @@ class MatomoTracker {
       // Use provided documentTitle, fallback to actual document.title only if not provided
       this.pushInstruction(
         "setDocumentTitle",
-        documentTitle ?? window.document.title
+        documentTitle ?? window.document.title,
       );
       this.pushInstruction(...(data as [string, ...any[]]));
     }
@@ -409,6 +427,65 @@ class MatomoTracker {
       window._paq = [[name, ...args]];
     }
     return this;
+  }
+
+  /**
+   * Requires user consent before tracking. Must be called before tracking can begin.
+   * Use this for opt-in consent management.
+   */
+  requireConsent(): void {
+    this.pushInstruction("requireConsent");
+  }
+
+  /**
+   * Marks that user has given consent. Tracking will begin after this is called.
+   */
+  setConsentGiven(): void {
+    this.pushInstruction("setConsentGiven");
+  }
+
+  /**
+   * Requires cookie consent before setting tracking cookies.
+   * Tracking will still occur but without cookies until consent is given.
+   */
+  requireCookieConsent(): void {
+    this.pushInstruction("requireCookieConsent");
+  }
+
+  /**
+   * Marks that user has given cookie consent. Cookies will be set after this is called.
+   */
+  setCookieConsentGiven(): void {
+    this.pushInstruction("setCookieConsentGiven");
+  }
+
+  /**
+   * Revokes cookie consent. Removes all tracking cookies.
+   */
+  forgetCookieConsentGiven(): void {
+    this.pushInstruction("forgetCookieConsentGiven");
+  }
+
+  /**
+   * Opts the current user out of tracking. They will not be tracked until optUserIn is called.
+   */
+  optUserOut(): void {
+    this.pushInstruction("optUserOut");
+  }
+
+  /**
+   * Opts the current user back into tracking after they were opted out.
+   */
+  forgetUserOptOut(): void {
+    this.pushInstruction("forgetUserOptOut");
+  }
+
+  /**
+   * Deletes all Matomo cookies for the current domain.
+   * Useful when user withdraws consent.
+   */
+  deleteCookies(): void {
+    this.pushInstruction("deleteCookies");
   }
 }
 
